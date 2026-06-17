@@ -14,10 +14,23 @@ export const sendMessage = async (req, res) => {
     const io = getIO();
     const onlineUsers = getOnlineUsers();
 
-    const receiverSocketId = onlineUsers[receiverId];
+    const receiverSocketId =
+      onlineUsers[receiverId];
 
+    const senderSocketId =
+      onlineUsers[req.user.userId];
+
+    // Send to receiver
     if (receiverSocketId) {
       io.to(receiverSocketId).emit(
+        "newMessage",
+        message
+      );
+    }
+
+    // Send to sender
+    if (senderSocketId) {
+      io.to(senderSocketId).emit(
         "newMessage",
         message
       );
@@ -26,6 +39,8 @@ export const sendMessage = async (req, res) => {
     res.status(201).json(message);
 
   } catch (error) {
+    console.error(error);
+
     res.status(500).json({
       message: error.message,
     });
